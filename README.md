@@ -2,7 +2,7 @@
 
 A production-style machine learning system that detects fraudulent credit card transactions in real time. The project covers the full lifecycle: data analysis, model training on severely imbalanced data, model explainability, and deployment as a containerized REST API.
 
-**Live demo:** `https://fraud-detection-api-xxxx.onrender.com/docs`
+**Live demo:** `https://fraud-detection-api-5eog.onrender.com/docs`
 *(Hosted on Render's free tier — the first request after inactivity may take 30–60 seconds to cold-start.)*
 
 ---
