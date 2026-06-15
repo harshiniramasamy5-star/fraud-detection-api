@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import pandas as pd
@@ -17,6 +17,11 @@ class Transaction(BaseModel):
     features: list[float]  # 30 values in COLS order
 
 
+@app.get("/")
+def root():
+    return {"message": "Fraud Detection API is running", "docs": "/docs"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -24,6 +29,11 @@ def health():
 
 @app.post("/predict")
 def predict(txn: Transaction):
+    if len(txn.features) != len(COLS):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Expected {len(COLS)} features, got {len(txn.features)}",
+        )
     df = pd.DataFrame([txn.features], columns=COLS)
     # Scale only Time and Amount, exactly as during training
     df[["Time", "Amount"]] = scaler.transform(df[["Time", "Amount"]])
