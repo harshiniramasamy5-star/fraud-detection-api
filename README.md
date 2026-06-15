@@ -31,6 +31,26 @@ The balanced logistic regression achieved slightly higher recall but raised 1,38
 
 ---
 
+
+## Cost-Sensitive Decisioning
+
+Accuracy is the wrong objective for this problem. With fraud at 0.17% of transactions, a model that flags nothing scores 99.83% accuracy while catching zero fraud. The two error types also carry very different costs: a missed fraud (false negative) can cost the full transaction amount, while a false alarm (false positive) costs only a brief manual review. Optimizing for accuracy would quietly favour the cheaper-looking mistake — never flagging — which is the worst outcome.
+
+The API therefore does not return a bare accuracy-optimized yes/no. It returns a calibrated fraud probability and routes it to an operational risk level at a configurable decision threshold:
+
+| Risk level | Probability | Action |
+|---|---|---|
+| `LOW` | below threshold | clears automatically |
+| `MEDIUM` | threshold to 0.80 | queued for manual review |
+| `HIGH` | 0.80 to 0.95 | held and reviewed |
+| `CRITICAL` | 0.95 and above | blocked immediately |
+
+This mirrors how production fraud systems route transactions to different actions rather than treating every flag identically. The threshold is exposed as a single constant so it can be set to the value chosen during training (e.g. a recall-constrained optimum) without code changes.
+
+### Batch scoring
+
+`POST /predict/batch` scores many transactions in one request and returns per-transaction results plus a summary (`total_transactions`, `flagged_as_fraud`, `fraud_rate_in_batch`) — the shape a downstream monitoring or settlement job would consume.
+
 ## Tech Stack
 
 - **ML:** scikit-learn, XGBoost, SHAP
